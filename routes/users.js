@@ -54,7 +54,8 @@ router.get('/', async (req, res, next) => {
 
 router.get('/callback', async (req, res, next) => {
   passport.authenticate('google', { failureRedirect: '/login' })
-  res.send('GGGG')
+  res.redirect('http://localhost:8080/abc')
+  // res.send('GGGG')
 });
 
 module.exports = router;
