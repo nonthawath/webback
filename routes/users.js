@@ -43,7 +43,6 @@ router.post('/create', async (req, res, next) => {
 router.get('/', async (req, res, next) => {
   try {
     passport.authenticate('google', { scope: ['profile' , 'email'] })
-    console.log('AAAA')
     // passport.authenticate('google', { failureRedirect: '/login' })
       // Successful authentication, redirect home.
   } catch (error) {
@@ -53,8 +52,10 @@ router.get('/', async (req, res, next) => {
 });
 
 router.get('/callback', async (req, res, next) => {
+  // console.log( "body data : ", req)
+  console.log()
   passport.authenticate('google', { failureRedirect: '/login' })
-  res.redirect('http://localhost:8080/abc')
+  res.redirect('http://localhost:8080/Admin')
   // res.send('GGGG')
 });
 

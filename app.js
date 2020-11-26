@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var cookieSession = require('cookie-session')
 var cors = require('cors')
+const getuser = require('./routes/getuser')
 
 var app = express();
 require('./service/logingoogle')
@@ -31,13 +32,14 @@ app.use(passport.session());
 
 app.use('/home', indexRouter);
 app.use('/users', usersRouter);
-
-app.get('/login/google' , passport.authenticate('google', { scope: ['profile' , 'email'] }))
+app.use('/getuser' , getuser)
+app.get('/login/google' , passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/userinfo.email'] }))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
