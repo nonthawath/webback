@@ -2,25 +2,25 @@ var express = require('express');
 var router = express.Router();
 var Users = require('../models/Users')
 var passport = require('passport')
-
+const Session = require('../models/Session')
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-passport.serializeUser(function(user, done) {
-    done(null, user);
-  });
+// passport.serializeUser(function(user, done) {
+//     done(null, user);
+//   });
   
-  passport.deserializeUser(function(user, done) {
-      done(err, user)
-  });
-    passport.use(new GoogleStrategy({
-        clientID: '929076668714-b7feubj0vc390btqe3jo6pfultg8bk5k.apps.googleusercontent.com',
-        clientSecret: 'OI6jAQMzWOyILngboxfw_teM',
-        callbackURL: "http://localhost:3000/users/"
-      },
-      function(accessToken, refreshToken, profile, done) {
-          return done(null, profile);
-      }
-));
+//   passport.deserializeUser(function(user, done) {
+//       done(null, user)
+//   });
+//     passport.use(new GoogleStrategy({
+//         clientID: '929076668714-b7feubj0vc390btqe3jo6pfultg8bk5k.apps.googleusercontent.com',
+//         clientSecret: 'OI6jAQMzWOyILngboxfw_teM',
+//         callbackURL: "http://localhost:3000/users/"
+//       },
+//       function(accessToken, refreshToken, profile, done) {
+//           return done(null, profile);
+//       }
+// ));
 /* GET users listing. */
 router.post('/create', async (req, res, next) => {
   try {
@@ -51,12 +51,25 @@ router.get('/', async (req, res, next) => {
   } 
 });
 
-router.get('/callback', async (req, res, next) => {
-  // console.log( "body data : ", req)
-  console.log()
-  passport.authenticate('google', { failureRedirect: '/login' })
-  res.redirect('http://localhost:8080/Admin')
-  // res.send('GGGG')
+router.post('/checktoken', async (req, res, next) => {
+  try {
+    let result = await Session.find({ token : req.body.token })
+    console.log(req.body.token)
+    console.log(result)
+    if(result.length > 0){
+      res.send({ login : true , email : result[0].email})
+    }else{
+      res.send({ login : false , email : ''})
+    }
+  } catch (error) {
+    console.log(error)
+    next(error)
+  } 
+});
+
+router.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }) ,async (req, res) => {
+  res.redirect('http://localhost:8080/Borrow?token=' + req.user)
+  
 });
 
 module.exports = router;

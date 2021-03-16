@@ -9,7 +9,8 @@ var usersRouter = require('./routes/users');
 var cookieSession = require('cookie-session')
 var cors = require('cors')
 const getuser = require('./routes/getuser')
-
+const borrow = require('./routes/inventory')
+const q = require('./routes/queue')
 var app = express();
 require('./service/logingoogle')
 app.use(cors())
@@ -20,6 +21,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -29,11 +31,13 @@ app.use(cookieSession({
 }))
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use('/q', q)
 app.use('/home', indexRouter);
 app.use('/users', usersRouter);
+app.use('/inventory' , borrow)
 app.use('/getuser' , getuser)
-app.get('/login/google' , passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/userinfo.email'] }))
+// app.use( '', )
+app.get('/login/google' , passport.authenticate('google', { scope: ['profile' , 'email'] }))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
