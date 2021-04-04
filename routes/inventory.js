@@ -2,10 +2,12 @@ var express = require('express');
 var router = express.Router();
 const inventoryBox = require('../models/inventoryBox')
 const history = require('../models/history')
+const fs = require('fs');
+const historyBorrow = require('../models/historyBorrow');
 
 router.post('/borrow', async (req, res, next) =>  {
     try {
-      let re = await inventoryBox.findOne({ boxid : req.body.boxid })
+      let re = await inventoryBox.findOne({ boxid : req.body.boxid , SubjectID : req.body.SubjectID, Sec: req.body.Sec, })
       console.log(re)
       if(re == null){
         res.send({ msg : 'ไม่มีเลขชุดอุปกรณ์นี้ใน ระบบ'})
@@ -23,6 +25,8 @@ router.post('/borrow', async (req, res, next) =>  {
             borrow_by: re.borrow_by,
             borrow_at: re.borrow_at,
             borrow_by_id: re.borrow_by_id,
+            SubjectID : req.body.SubjectID,
+            Sec : req.body.Sec,
             status: 'ยืม'
           })
           await historys.save()
@@ -38,6 +42,9 @@ router.post('/borrow', async (req, res, next) =>  {
             borrow_by: re.borrow_by,
             borrow_at: re.borrow_at,
             borrow_by_id: re.borrow_by_id,
+            SubjectID : req.body.SubjectID,
+            Sec : req.body.Sec,
+            DmgItem : req.body.DmgItem,
             status: 'คืน'
           })
           await historys.save()
@@ -60,9 +67,12 @@ router.post('/borrow', async (req, res, next) =>  {
 
   router.post('/createbox', async (req, res, next) =>  {
     try {
-        var Box = new inventoryBox({
+      var Box = new inventoryBox({
             boxid : req.body.boxid,
             boxname : req.body.boxname,
+            listItem : req.body.listItem,
+            SubjectID : req.body.SubjectID,
+            Sec: req.body.Sec,
             })
       await Box.save()
       res.send({ msg : 'Success' , data : Box })
@@ -72,9 +82,11 @@ router.post('/borrow', async (req, res, next) =>  {
     }
   });
 
-  router.get('/getall', async (req, res, next) =>  {
+  router.get('/getall/:SubjectID/:Sec', async (req, res, next) =>  {
     try {
-      var re = await inventoryBox.find({ })
+      let { SubjectID,
+        Sec} = req.params
+      var re = await inventoryBox.find({SubjectID : SubjectID , Sec: Sec })
       res.send({ msg : 'Success' , data : re })
     } catch (error) {
       console.log( error.toString() )
@@ -82,9 +94,11 @@ router.post('/borrow', async (req, res, next) =>  {
     }
   });
 
-  router.get('/getallhistory', async (req, res, next) =>  {
+  router.get('/getallhistory/:SubjectID/:Sec', async (req, res, next) =>  {
     try {
-      var re = await history.find({ })
+      let { SubjectID,
+        Sec} = req.params
+      var re = await history.find({SubjectID : SubjectID , Sec: Sec })
       res.send({ msg : 'Success' , data : re })
     } catch (error) {
       console.log( error.toString() )
@@ -92,4 +106,50 @@ router.post('/borrow', async (req, res, next) =>  {
     }
   });
   
+  router.get('/getallhistoryNoneTa/:SubjectID/:Sec', async (req, res, next) =>  {
+    try {
+      let { SubjectID,
+        Sec} = req.params
+      var re = await historyBorrow.find({SubjectID : SubjectID , Sec: Sec })
+      res.send({ msg : 'Success' , data : re })
+    } catch (error) {
+      console.log( error.toString() )
+      res.send({ error : 'error' , msg : error.toString() })
+    }
+  });
+
+  router.get('/getbox/:boxid/:SubjectID/:Sec', async (req, res, next) =>  {
+    try {
+      let { SubjectID, boxid ,
+        Sec} = req.params
+      let re = await inventoryBox.findOne({ boxid: boxid, SubjectID : SubjectID , Sec: Sec })
+      console.log(re)
+      res.send({ msg : 'Success' , data : re.listItem })
+    } catch (error) {
+      console.log( error.toString() )
+      res.send({ error : 'error' , msg : error.toString() })
+    }
+  });
+
+
+  router.post('/deleteListItem', async (req, res, next) =>  {
+    try {
+      let { SubjectID, boxid,
+        Sec , ListItem } = req.body
+      let re = await inventoryBox.findOne({ boxid: boxid, SubjectID : SubjectID , Sec: Sec })
+      let newlist = re.listItem.filter(e => {
+          return (!ListItem.includes(e.name))
+      })
+      re.listItem = newlist
+      re.markModified('listItem')
+      await re.save()
+      res.send({ msg : 'Success' , data : re.listItem })
+    } catch (error) {
+      console.log( error.toString() )
+      res.send({ error : 'error' , msg : error.toString() })
+    }
+  });
+
+
+
   module.exports = router;

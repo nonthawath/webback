@@ -8,8 +8,12 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var cookieSession = require('cookie-session')
 var cors = require('cors')
+
+const Subjects = require('./routes/Subjects')
 const getuser = require('./routes/getuser')
 const borrow = require('./routes/inventory')
+const Getimage = require('./routes/GetImage')
+const historyBorrow = require('./routes/historyBorrow')
 const q = require('./routes/queue')
 var app = express();
 require('./service/logingoogle')
@@ -29,6 +33,7 @@ app.use(cookieSession({
   name: 'inventory-session',
   keys: ['key1', 'key2']
 }))
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/q', q)
@@ -36,8 +41,14 @@ app.use('/home', indexRouter);
 app.use('/users', usersRouter);
 app.use('/inventory' , borrow)
 app.use('/getuser' , getuser)
+app.use('/historyBorrow' , historyBorrow)
+app.use('/GetImage' , Getimage)
+app.use('/Subjects' , Subjects)
+
 // app.use( '', )
-app.get('/login/google' , passport.authenticate('google', { scope: ['profile' , 'email'] }))
+app.get('/login/google' , passport.authenticate('google', { scope: ['profile' , 'email'] } , ( res ) => {
+  console.log( 'response' , res)
+}))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

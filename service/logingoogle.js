@@ -2,6 +2,7 @@ var passport = require('passport')
 var GoogleStrategy = require('passport-google-oauth20').Strategy;
 const md5 = require('md5');
 const Session = require('../models/Session')
+const Users = require('../models/Users')
 
 passport.serializeUser(function(user, done) {
     done(null, user);
@@ -18,14 +19,24 @@ passport.serializeUser(function(user, done) {
       async (accessToken, refreshToken, profile, done ) => {
         let email = profile.emails[0].value 
         let token = md5( Date.now() + email )
-        // console.log(profile.emails[0].value);
+        
+        // console.log(email);
         try {
+          let user = await Users.findOne({ email : email })
+          if(user == null){
+            // console.log( ' new USer')
+            user =  new Users({
+              email : email,
+            })
+            await user.save()
+          }
           let createsession = new Session({
             token : token,
             email : email,
+            role : user.role
           })
           await createsession.save()
-          console.log('Create Session : ' , token)
+          // console.log('Create Session : ' , token)
           return done(null , token)
         } catch (error) {
           console.log(error)

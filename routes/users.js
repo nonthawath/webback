@@ -54,10 +54,10 @@ router.get('/', async (req, res, next) => {
 router.post('/checktoken', async (req, res, next) => {
   try {
     let result = await Session.find({ token : req.body.token })
-    console.log(req.body.token)
+    // console.log(req.body.token)
     console.log(result)
     if(result.length > 0){
-      res.send({ login : true , email : result[0].email})
+      res.send({ login : true , email : result[0].email , role: result[0].role })
     }else{
       res.send({ login : false , email : ''})
     }
@@ -68,8 +68,9 @@ router.post('/checktoken', async (req, res, next) => {
 });
 
 router.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }) ,async (req, res) => {
-  res.redirect('http://localhost:8080/Borrow?token=' + req.user)
+  console.log('Login One => ' , req.user)
+  res.redirect('http://localhost:8080/GetSubject?token=' + req.user)
   
-});
+}); 
 
 module.exports = router;

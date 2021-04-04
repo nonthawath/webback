@@ -13,7 +13,10 @@ var Schema = new mongoose.Schema({
             connt : { type:Number , default: ''  },
             itemid : {type:String , default: '' },
         }
-    ]
+    ],
+    SubjectID : { type:String , default: '' },
+    Sec: { type:String , default: '' },
+    DmgItem: { type:Array , default: '' },
     // email : { type:String , default: '' , required: true  },
 }, { collection: 'history' })
 
