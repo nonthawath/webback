@@ -4,15 +4,20 @@ const queue = require('../models/queue')
 
 router.post('/', async (req, res, next) =>  {
     try {
-        let Time = []
-        req.body.Time.forEach( e => {
-            Time.push({ Time : e , Booking : []})
-        });
-        let newqeueue = new queue({
-            SubjectName: req.body.SubjectName,
-            Time: Time,
-            Date: req.body.Date,
-        })
+        let Time = req.body.Time
+        let newqeueue = await queue.findOne({ SubjectID: req.body.SubjectID ,  Sec: req.body.Sec })
+        Time.map( e => e.Booking = [])
+        if(newqeueue){
+            newqeueue.Time = Time
+            newqeueue.markModified('Time')
+        }else{
+            newqeueue = new queue({
+                SubjectName: req.body.SubjectName,
+                SubjectID: req.body.SubjectID,
+                Sec: req.body.Sec,
+                Time: Time,
+            })
+        }
         await newqeueue.save()
         res.send({ msg : "success" })
     } catch (error) {
@@ -21,9 +26,13 @@ router.post('/', async (req, res, next) =>  {
     }
   });
 
-router.get('/:SubjectName' , async (req , res , next) => {
+router.get('/:SubjectName/:SubjectID/:Sec' , async (req , res , next) => {
     try {
-        let dataqueue  = await queue.findOne({ SubjectName: req.params.SubjectName })
+        const { SubjectName,
+            SubjectID,
+            Sec} = req.params
+        let dataqueue  = await queue.findOne({ SubjectName: SubjectName , SubjectID: SubjectID , Sec: Sec})
+        console.log(dataqueue)
         res.send(dataqueue)
     } catch (error) {
         console.log(error.toString())
@@ -35,11 +44,17 @@ router.post('/Booking' , async (req , res , next) => {
     try {
         let indexTime = req.body.indexTime
         let email = req.body.email
-        let dataqueue  = await queue.findOne({ SubjectName: req.body.SubjectName })
-        dataqueue.Time[indexTime].Booking.push( email )
-        dataqueue.markModified('Time');
-        await dataqueue.save()
-        res.send(dataqueue)
+        let dataqueue  = await queue.findOne({ SubjectID: req.body.SubjectID , Sec: req.body.Sec  })
+        console.log(indexTime)
+        if(dataqueue){
+            dataqueue.Time[indexTime].Booking.push( email )
+            dataqueue.markModified('Time');
+            await dataqueue.save()
+            res.send(dataqueue)
+        }else{
+            res.send({ error: true })
+        }
+        
     } catch (error) {
         console.log(error.toString())
         res.send({ error : true , msg : error.toString() })

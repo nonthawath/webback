@@ -111,6 +111,7 @@ router.post('/borrow', async (req, res, next) =>  {
       let { SubjectID,
         Sec} = req.params
       var re = await historyBorrow.find({SubjectID : SubjectID , Sec: Sec })
+      // var re = await historyBorrow.find({ })
       res.send({ msg : 'Success' , data : re })
     } catch (error) {
       console.log( error.toString() )

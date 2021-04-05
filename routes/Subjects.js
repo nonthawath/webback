@@ -70,7 +70,7 @@ router.post('/CheckPermission', async (req, res, next) => {
         console.log(Subject.Students.includes(Student))
         if(Subject != null){
             if(Subject.Students.includes(Student)){
-                res.send({ check : true  })
+                res.send({ check : true })
             }else{
                 res.send({ check : false  })
             }

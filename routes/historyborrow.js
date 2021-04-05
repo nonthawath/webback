@@ -9,6 +9,8 @@ var cpUpload = upload.fields([{ name: 'ImgInventory', maxCount: 1 }, { name: 'Im
 /* GET home page. */
 router.post('/Borrow', cpUpload ,async (req, res, next) => {
     try {
+        const {SubjectID , 
+            Sec } = req.body
         if(req.files){
             let ImgInventory = req.files.ImgInventory
             let ImgHuman = req.files.ImgHuman
@@ -23,6 +25,8 @@ router.post('/Borrow', cpUpload ,async (req, res, next) => {
                 ImgInventory: `http://localhost:3000/GetImage/${filenameImgInventory}`,
                 ImgHuman: `http://localhost:3000/GetImage/${filenameImgHuman}`,
                 status: 'ยืม',
+                SubjectID: SubjectID,
+                Sec: Sec,
             })
             await history.save()
         }
@@ -32,9 +36,7 @@ router.post('/Borrow', cpUpload ,async (req, res, next) => {
     }
 });
 
-router.post('/return', (req, res, next) => {
- 
-});
+
 
 
 module.exports = router;
