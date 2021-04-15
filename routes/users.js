@@ -53,10 +53,10 @@ router.get('/', async (req, res, next) => {
 
 router.post('/checktoken', async (req, res, next) => {
   try {
-    let result = await Session.find({ token : req.body.token })
+    let result = await Session.find({ token : req.body.token }) //findOne ไม่ต้องใส่ 0
     // console.log(req.body.token)
     console.log(result)
-    if(result.length > 0){
+    if(result.length > 0){ ///result != null
       res.send({ login : true , email : result[0].email , role: result[0].role })
     }else{
       res.send({ login : false , email : ''})
@@ -68,8 +68,8 @@ router.post('/checktoken', async (req, res, next) => {
 });
 
 router.get('/callback', passport.authenticate('google', { failureRedirect: '/login' }) ,async (req, res) => {
-  console.log('Login One => ' , req.user)
-  res.redirect('http://localhost:8080/GetSubject?token=' + req.user)
+  console.log(req)
+  res.redirect('http://localhost:8080/GetSubject?token=' + req.user) ///google passport return มาอยู่ใน req.user ไม่รู้ว่าทำไมเหมือนกัน
   
 }); 
 

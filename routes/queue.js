@@ -42,15 +42,23 @@ router.get('/:SubjectName/:SubjectID/:Sec' , async (req , res , next) => {
 
 router.post('/Booking' , async (req , res , next) => {
     try {
-        let indexTime = req.body.indexTime
         let email = req.body.email
+        let indexTime = req.body.indexTime
         let dataqueue  = await queue.findOne({ SubjectID: req.body.SubjectID , Sec: req.body.Sec  })
         console.log(indexTime)
         if(dataqueue){
-            dataqueue.Time[indexTime].Booking.push( email )
-            dataqueue.markModified('Time');
-            await dataqueue.save()
-            res.send(dataqueue)
+            
+            if(dataqueue.Time[indexTime].Booking.length <= dataqueue.Time[indexTime].limit){
+                console.log("ifelse")
+                dataqueue.Time[indexTime].Booking.push( email )
+                dataqueue.markModified('Time');
+                await dataqueue.save()
+                res.send(dataqueue)
+            }else{
+                console.log("else")
+                res.send({ error: true , msg : "จำนวนคนยืมเต็มแล้ว"})
+            }
+    
         }else{
             res.send({ error: true })
         }

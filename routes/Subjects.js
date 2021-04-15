@@ -11,15 +11,21 @@ router.post('/createSubject', async (req, res, next) => {
             Students,
             Sec
         } = req.body
-       let Subject = new Subjects({
-        SubjectName: SubjectName, 
-        SubjectID: SubjectID, 
-        Professor: Professor,
-        Students: Students, 
-        Sec: Sec,
-       })
-       await Subject.save()
-       res.send({ error : false , msg : 'CreateSuccess'})
+       let checkDuplicateSec = await Subjects.findOne({SubjectID: SubjectID , Sec: Sec   }) 
+       console.log(checkDuplicateSec)
+       if( checkDuplicateSec == null ){
+        let Subject = new Subjects({
+            SubjectName: SubjectName, 
+            SubjectID: SubjectID, 
+            Professor: Professor,
+            Students: Students, 
+            Sec: Sec,
+        })
+        await Subject.save()
+        res.send({ error : false , msg : 'CreateSuccess'})
+       }else{
+        res.send({ error : true , msg : 'Duplicate Sec'})
+       }
     } catch (error) {
         res.send({ error: true , msg : error.toString() })
     }
