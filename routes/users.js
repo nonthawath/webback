@@ -73,4 +73,38 @@ router.get('/callback', passport.authenticate('google', { failureRedirect: '/log
   
 }); 
 
+router.post('/updateRoleToProfessor', async (req, res, next) => {
+  try {
+    const { email } = req.body
+    let user = await Users.findOne({ email })
+    user.role = 'Professor'
+    await user.save()
+    return res.status(200).send()
+  } catch (error) {
+    console.log(error)
+    next(error)
+  } 
+});
+
+router.post('/deleteUser', async (req, res, next) => {
+  try {
+    const { email } = req.body
+    await Users.remove({ email })
+    return res.status(200).send()
+  } catch (error) {
+    console.log(error)
+    next(error)
+  } 
+});
+
+router.get('/getAllUser', async (req, res, next) => {
+  try {
+    let users = await Users.find()
+    return res.status(200).send({ users })
+  } catch (error) {
+    console.log(error)
+    next(error)
+  } 
+});
+
 module.exports = router;
