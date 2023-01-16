@@ -154,14 +154,16 @@ router.post('/borrow', async (req, res, next) =>  {
 
 router.post('/updateListItem', async (req, res, next) =>  {
   try {
-    let { SubjectID, boxid, Sec, ListItem } = req.body
+    console.log(req.body)
+    let { SubjectID, boxid, Sec, Listitem } = req.body
     let prevData = await inventoryBox.findOne({ boxid, SubjectID , Sec })
     
     // map missing count list item 
-    let newListItem = ListItem.map((e, i) => {
+    console.log(Listitem)
+    let newListItem = Listitem.map((e, i) => {
       return {
         name: e.name,
-        missingItem: parseInt(prevData.listItem[i]) - parseInt(e),
+        missingItem: parseInt(prevData.listItem[i].count) - parseInt(e.count),
         count: e.count
       }
     }) 
@@ -171,17 +173,16 @@ router.post('/updateListItem', async (req, res, next) =>  {
       subject: prevData.subject,
       SubjectID,
       Sec,
-      boxName,
-      create_at,
+      boxName: prevData.boxName,
       listItem: newListItem,
     })
 
-    prevData.listItem = ListItem
+    prevData.listItem = Listitem
     prevData.markModified('listItem')
 
     await newHistory.save()
     await prevData.save()
-    res.send({ msg : 'Success' , data : re.listItem })
+    res.send({ msg : 'Success' , data : Listitem })
   } catch (error) {
     console.log( error.toString() )
     res.send({ error : 'error' , msg : error.toString() })
