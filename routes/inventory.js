@@ -4,6 +4,7 @@ const inventoryBox = require('../models/inventoryBox')
 const history = require('../models/history')
 const fs = require('fs');
 const historyBorrow = require('../models/historyBorrow');
+const HistoryInventoryRepo = require('../models/inventoryBoxHistory');
 
 router.post('/borrow', async (req, res, next) =>  {
     try {
@@ -149,8 +150,52 @@ router.post('/borrow', async (req, res, next) =>  {
       console.log( error.toString() )
       res.send({ error : 'error' , msg : error.toString() })
     }
-  });
+});
 
+router.post('/updateListItem', async (req, res, next) =>  {
+  try {
+    let { SubjectID, boxid, Sec, ListItem } = req.body
+    let prevData = await inventoryBox.findOne({ boxid, SubjectID , Sec })
+    
+    // map missing count list item 
+    let newListItem = ListItem.map((e, i) => {
+      return {
+        name: e.name,
+        missingItem: parseInt(prevData.listItem[i]) - parseInt(e),
+        count: e.count
+      }
+    }) 
 
+    let newHistory = new HistoryInventoryRepo({
+      boxid,
+      subject: prevData.subject,
+      SubjectID,
+      Sec,
+      boxName,
+      create_at,
+      listItem: newListItem,
+    })
 
-  module.exports = router;
+    prevData.listItem = ListItem
+    prevData.markModified('listItem')
+
+    await newHistory.save()
+    await prevData.save()
+    res.send({ msg : 'Success' , data : re.listItem })
+  } catch (error) {
+    console.log( error.toString() )
+    res.send({ error : 'error' , msg : error.toString() })
+  }
+});
+
+router.get('/historyInventoryBox', async (req, res, next) =>  {
+  try {
+    let histories = await HistoryInventoryRepo.find({})
+    res.send({ msg : 'Success' , data : histories })
+  } catch (error) {
+    console.log( error.toString() )
+    res.send({ error : 'error' , msg : error.toString() })
+  }
+});
+
+module.exports = router;
