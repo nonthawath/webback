@@ -161,10 +161,17 @@ router.post('/updateListItem', async (req, res, next) =>  {
     // map missing count list item 
     console.log(Listitem)
     let newListItem = Listitem.map((e, i) => {
+      let totalBroken = prevData.listItem[i]?.totalBroken || 0
+      let missingItem = parseInt(prevData.listItem[i].count) - parseInt(e.count)
+      if(parseInt(prevData.listItem[i].count) > parseInt(e.count)) {
+        totalBroken =  totalBroken + missingItem
+      }
+
       return {
         name: e.name,
-        missingItem: parseInt(prevData.listItem[i].count) - parseInt(e.count),
-        count: e.count
+        missingItem,
+        count: e.count,
+        totalBroken
       }
     }) 
 
@@ -173,11 +180,11 @@ router.post('/updateListItem', async (req, res, next) =>  {
       subject: prevData.subject,
       SubjectID,
       Sec,
-      boxName: prevData.boxName,
+      boxName: prevData.boxname,
       listItem: newListItem,
     })
 
-    prevData.listItem = Listitem
+    prevData.listItem = newListItem
     prevData.markModified('listItem')
 
     await newHistory.save()
@@ -189,14 +196,27 @@ router.post('/updateListItem', async (req, res, next) =>  {
   }
 });
 
-router.get('/historyInventoryBox', async (req, res, next) =>  {
+router.get('/historyInventoryBox/:SubjectID/:Sec', async (req, res, next) =>  {
   try {
-    let histories = await HistoryInventoryRepo.find({})
+    let { SubjectID, Sec} = req.params
+    let histories = await HistoryInventoryRepo.find({SubjectID, Sec})
     res.send({ msg : 'Success' , data : histories })
   } catch (error) {
     console.log( error.toString() )
     res.send({ error : 'error' , msg : error.toString() })
   }
 });
+
+router.post('/deleteInventoryBox/:id', async (req, res, next) =>  {
+  try {
+    let { id } = req.params
+    let re = await inventoryBox.deleteOne({ _id: id })
+    res.send({ msg : 'Success' })
+  } catch (error) {
+    console.log( error.toString() )
+    res.send({ error : 'error' , msg : error.toString() })
+  }
+});
+
 
 module.exports = router;
