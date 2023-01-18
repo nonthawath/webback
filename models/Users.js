@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 var Schema = new mongoose.Schema({
     // username : { type:String,default: '', required: true ,unique: true },
-    role : { type:String , default: 'Student' }, // change role default this line ******
+    role : { type:String , default: 'Professor' }, // change role default this line ******
     email : { type:String , default: '', required: true, },
     IDcard : { type:String , default: '' },
     Subject : { type:Array , default: [] },
