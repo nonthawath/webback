@@ -8,7 +8,7 @@ try {
     useCreateIndex: true,
     }
   mongoose.connect(url,option)
-  console.log('DB Connect');
+  console.log('DB Connect..');
 } 
 catch (error) {
   console.log(error);

@@ -5,6 +5,7 @@ const history = require('../models/history')
 const fs = require('fs');
 const historyBorrow = require('../models/historyBorrow');
 const HistoryInventoryRepo = require('../models/inventoryBoxHistory');
+const XLSX = require('xlsx')
 
 router.post('/borrow', async (req, res, next) =>  {
     try {
@@ -95,6 +96,8 @@ router.post('/borrow', async (req, res, next) =>  {
     }
   });
 
+  
+
   router.get('/getallhistory/:SubjectID/:Sec', async (req, res, next) =>  {
     try {
       let { SubjectID,
@@ -161,7 +164,13 @@ router.post('/updateListItem', async (req, res, next) =>  {
     // map missing count list item 
     console.log(Listitem)
     let newListItem = Listitem.map((e, i) => {
-      let totalBroken = prevData.listItem[i]?.totalBroken || 0
+      let totalBroken
+      if(prevData.listItem[i].totalBroken){
+        totalBroken = prevData.listItem[i].totalBroken
+      }else{
+        totalBroken = 0;
+      }
+      
       let missingItem = parseInt(prevData.listItem[i].count) - parseInt(e.count)
       if(parseInt(prevData.listItem[i].count) > parseInt(e.count)) {
         totalBroken =  totalBroken + missingItem
@@ -201,6 +210,39 @@ router.get('/historyInventoryBox/:SubjectID/:Sec', async (req, res, next) =>  {
     let { SubjectID, Sec} = req.params
     let histories = await HistoryInventoryRepo.find({SubjectID, Sec})
     res.send({ msg : 'Success' , data : histories })
+  } catch (error) {
+    console.log( error.toString() )
+    res.send({ error : 'error' , msg : error.toString() })
+  }
+});
+router.post('/exportHistory', async (req, res, next) =>  {
+  try {
+    console.log(req.body);
+    let { SubjectID, Sec} = req.body;
+    let histories = await HistoryInventoryRepo.find({SubjectID, Sec})
+    json = [];
+    histories.forEach(element => {
+      console.log(element.listItem)
+      json.push({
+        name: element.listItem[0].name,
+        missingItem: element.listItem[0].missingItem,
+        totalBroken: element.listItem[0].totalBroken, 
+        boxid: element.boxid,
+        SubjectID: element.SubjectID,
+        Sec: element.Sec,
+        boxName: element.boxName,
+        create_at: element.create_at
+      })
+    });
+    
+    const dataWS = XLSX.utils.json_to_sheet(json,{header:['name','missingItem', 'totalBroken', 'boxid', 'SubjectID', 'Sec', 'boxName', 'create_at']})
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, dataWS)
+    console.log(histories);
+    let date = Date.now()
+
+    XLSX.writeFile(wb,`./export/history_${SubjectID}_${Sec}_${date}.xlsx`)
+  res.send({ msg : 'Success',data: histories })
   } catch (error) {
     console.log( error.toString() )
     res.send({ error : 'error' , msg : error.toString() })
